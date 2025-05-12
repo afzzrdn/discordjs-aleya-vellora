@@ -171,8 +171,8 @@ client.on('interactionCreate', async interaction => {
         const afkChannelId = AFK_CHANNEL_ID; // Tambahkan ID ini di .env
         const welcomeChannelId = LOGS_CHANNEL_ID;
 
-        const channel = member.guild.channels.cache.get(welcomeChannelId);
         const member = interaction.member;
+        const channel = member.guild.channels.cache.get(welcomeChannelId);
 
         if (!member.voice.channel) {
             return interaction.reply({ content: '🚫 Kamu tidak berada di voice channel mana pun.', ephemeral: true });
