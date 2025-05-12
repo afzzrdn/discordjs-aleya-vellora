@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@discordjs/voice": "^0.18.0",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "discord.js": "^14.19.3",
     "dotenv": "^16.5.0",
     "yt-search": "^2.13.1",
