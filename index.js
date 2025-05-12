@@ -70,12 +70,20 @@ client.on('guildMemberRemove', async member => {
     if (!channel) return console.log('⚠️ Goodbye channel tidak ditemukan.');
 
     try {
-        await channel.send({
-            content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢💔\n` +
-                    `Aleya masih pengen banget ngobrol sama kamu loh~ 🌸💖\n` +
-                    `Semoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🥺✨\n` +
-                    `Kalau rindu... pintu Aleya selalu terbuka kok~ 💌💖 Kami semua bakal kangen banget! 💕`
-        });
+        const farewellEmbed = new EmbedBuilder()
+            .setColor(0xFFB6C1)  // Warna soft pink yang manis 💖
+            .setTitle('🌸 **Aduh, Ada yang Pergi...** 💔')
+            .setDescription(
+                `Ehhh~ <@${member.id}> kok pergi sih...? 😢💔\n` +
+                `Aleya masih pengen banget ngobrol sama kamu loh~ 🌸💖\n` +
+                `Semoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🥺✨\n` +
+                `Kalau rindu... pintu Aleya selalu terbuka kok~ 💌💖 Kami semua bakal kangen banget! 💕`
+            )
+            .setThumbnail(member.displayAvatarURL())  // Menambahkan avatar member
+            .setFooter({ text: 'Selalu ada tempat untukmu di sini, kapan saja~ 💕' })
+            .setTimestamp();
+
+        await channel.send({ embeds: [farewellEmbed] });
     } catch (err) {
         console.error('❌ Gagal mengirim pesan perpisahan:', err);
     }
@@ -184,7 +192,6 @@ client.on('interactionCreate', async interaction => {
                 .setTimestamp();
 
             await channel.send({ embeds: [afkEmbed] });
-            await interaction.reply({ content: `✅ Kamu udah dipindahkan ke AFK channel, semoga cepet balik yaa~! 💖`, ephemeral: true });
         } catch (err) {
             console.error(err);
             await interaction.reply({ content: '❌ Aduh, gagal deh memindahkan kamu ke AFK channel... coba lagi nanti ya~', ephemeral: true });
