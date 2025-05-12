@@ -5,6 +5,9 @@ const {
 } = require('./config/ids');
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const kataKasar = require('./utils/kataKasar');
+const { hasAnyRole } = require('./helpers/roleChecker');
+const { ADMIN_ROLE_ID } = require('./config/ids');
+
 
 const client = new Client({
     intents: [
@@ -95,12 +98,20 @@ client.on('interactionCreate', async interaction => {
     else if (commandName === 'ping') {
         await interaction.reply('✨ Hai, aku di sini! Ping aku kapan saja, aku selalu siap menemani! 💖');
 
-    } else if (commandName === 'owner') {
+    } 
+    // Owner
+    else if (commandName === 'owner') {
         await interaction.reply('🌸 Aku dibuat oleh seorang yang sangat baik hati, yaitu <@542229001188671507>. Kunjungi https://muhammadafzaal.com untuk mengetahui penciptaku! 💖');
 
     } 
     // Warn
     else if (commandName === 'warn') {
+        if (!hasAnyRole(interaction.member, [ADMIN_ROLE_ID])) {
+            return await interaction.reply({
+                content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
+                ephemeral: true
+            });
+        }
         const target = options.getUser('user');
         const reason = options.getString('reason') || 'Tidak ada alasan diberikan.';
 
@@ -139,6 +150,12 @@ client.on('interactionCreate', async interaction => {
     }
     // Ban
     else if (commandName === 'ban') {
+        if (!hasAnyRole(interaction.member, [ADMIN_ROLE_ID])) {
+            return await interaction.reply({
+                content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
+                ephemeral: true
+            });
+        }
         const target = options.getUser('user');
         const reason = options.getString('reason');
         const member = interaction.guild.members.cache.get(target.id);
@@ -169,6 +186,12 @@ client.on('interactionCreate', async interaction => {
     }
     // Unban
     else if (commandName === 'unban') {
+        if (!hasAnyRole(interaction.member, [ADMIN_ROLE_ID])) {
+            return await interaction.reply({
+                content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
+                ephemeral: true
+            });
+        }
         const userId = interaction.options.getString('user_id');
         const reason = interaction.options.getString('reason') || 'Tidak ada alasan diberikan.';
 
