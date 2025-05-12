@@ -43,7 +43,7 @@ client.on('guildMemberAdd', async member => {
     try {
         await member.roles.add(role);
         await channel.send({
-            content: `UwU~ siapa nih yang baru datang? 🌸\nHaii <@${member.id}>~ selamat datang di **${member.guild.name}**~ ✨\nAleya cantik udah nungguin kamu dari tadi loh~ 😳\nYuk baca dulu <#1281186721857404969> biar gak dimarahin! 💅 Lalu kenalan yaa, biar makin akrab~ 💖`,
+            content: `UwU~ siapa nih yang baru datang? 🌸\nHaii <@${member.id}>~ selamat datang di **${member.guild.name}**~ ✨\nAku udah nungguin kamu dari tadi loh~ 😳\nYuk baca dulu <#1281186721857404969> biar gak dimarahin! 💅 Lalu kenalan yaa, biar makin akrab~ 💖`,
         });
         } catch (err) {
             console.error('❌ Gagal mengirim pesan selamat datang:', err);
@@ -58,7 +58,7 @@ client.on('guildMemberRemove', async member => {
 
     try {
         await channel.send({
-        content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢\nPadahal Aleya cantik masih pengen ngobrol loh~ 💔\nSemoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🌸\nKalo rindu... pintu selalu terbuka kok~ 💌`,
+        content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢\nPadahal Aku masih pengen ngobrol loh~ 💔\nSemoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🌸\nKalo rindu... pintu selalu terbuka kok~ 💌`,
         });
     } catch (err) {
         console.error('❌ Gagal mengirim pesan perpisahan:', err);
