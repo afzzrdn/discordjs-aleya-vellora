@@ -68,14 +68,21 @@ const commands = [
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 (async () => {
-  try {
-    console.log('⏳ Mendaftarkan perintah slash...');
-    await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-      { body: commands },
-    );
-    console.log('✅ Perintah berhasil didaftarkan.');
-  } catch (error) {
-    console.error('❌ Gagal mendaftarkan perintah:', error);
-  }
+    try {
+        console.log('🧹 Menghapus semua slash command lama...');
+        await rest.put(
+        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+        { body: [] },
+        );
+        console.log('✅ Semua perintah lama dihapus.');
+
+        console.log('⏳ Mendaftarkan ulang perintah baru...');
+        await rest.put(
+        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+        { body: commands },
+        );
+        console.log('✅ Perintah baru berhasil didaftarkan.');
+    } catch (error) {
+        console.error('❌ Terjadi kesalahan:', error);
+    }
 })();
