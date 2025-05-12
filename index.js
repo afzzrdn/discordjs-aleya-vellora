@@ -42,12 +42,25 @@ client.on('guildMemberAdd', async member => {
 
     try {
         await member.roles.add(role);
-        await channel.send({
-            content: `UwU~ siapa nih yang baru datang? 🌸\nHaii <@${member.id}>~ selamat datang di **${member.guild.name}**~ ✨\nAku udah nungguin kamu dari tadi loh~ 😳\nYuk baca dulu <#1281186721857404969> biar gak dimarahin! 💅 Lalu kenalan yaa, biar makin akrab~ 💖`,
-        });
-        } catch (err) {
-            console.error('❌ Gagal mengirim pesan selamat datang:', err);
-        }
+        const welcomeEmbed = new EmbedBuilder()
+            .setColor(0xFFB6C1)  // Warna soft pink yang manis 💖
+            .setTitle('✨ **Yeay! Ada yang baru datang~!** ✨')
+            .setDescription(
+                `Aww~ siapa nih yang baru gabung? 🌸\n` +
+                `Haii <@${member.id}>~ selamat datang di **${member.guild.name}**~ ✨\n` +
+                `Aleya udah nungguin kamu dari tadi loh~ 😳💖\n` +
+                `Jangan lupa baca dulu <#1281186721857404969> yaa, biar makin akrab dan nggak dimarahin! 💅✨\n` +
+                `Ayo kenalan, kita bakal seru-seruan bareng! 💖`
+            )
+            .setThumbnail(member.displayAvatarURL())  // Menambahkan avatar member
+            .setFooter({ text: 'Semoga betah yaa, Aleya suka banget kalau kamu ada di sini! 💕' })
+            .setTimestamp();
+
+        await channel.send({ embeds: [welcomeEmbed] });
+    } catch (err) {
+        console.error('❌ Gagal mengirim pesan selamat datang:', err);
+    }
+
 });
 
 client.on('guildMemberRemove', async member => {
@@ -58,7 +71,10 @@ client.on('guildMemberRemove', async member => {
 
     try {
         await channel.send({
-        content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢\nPadahal Aku masih pengen ngobrol loh~ 💔\nSemoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🌸\nKalo rindu... pintu selalu terbuka kok~ 💌`,
+            content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢💔\n` +
+                    `Aleya masih pengen banget ngobrol sama kamu loh~ 🌸💖\n` +
+                    `Semoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🥺✨\n` +
+                    `Kalau rindu... pintu Aleya selalu terbuka kok~ 💌💖 Kami semua bakal kangen banget! 💕`
         });
     } catch (err) {
         console.error('❌ Gagal mengirim pesan perpisahan:', err);
@@ -143,9 +159,11 @@ client.on('interactionCreate', async interaction => {
 
     } 
     // AFK
-    else if (interaction.commandName === 'afk') {
+    else if (commandName === 'afk') {
         const afkChannelId = AFK_CHANNEL_ID; // Tambahkan ID ini di .env
+        const welcomeChannelId = LOGS_CHANNEL_ID;
 
+        const channel = member.guild.channels.cache.get(welcomeChannelId);
         const member = interaction.member;
 
         if (!member.voice.channel) {
@@ -154,10 +172,22 @@ client.on('interactionCreate', async interaction => {
 
         try {
             await member.voice.setChannel(afkChannelId);
-            await interaction.reply({ content: `✅ Kamu telah dipindahkan ke AFK channel.`, ephemeral: true });
+            const afkEmbed = new EmbedBuilder()
+                .setColor(0xFFB6C1)  // Warna soft pink yang manis 💖
+                .setTitle('💖 **Oh no~!** 😴 **Member AFK!** 💖')
+                .setDescription(
+                    `Aww, **${member.displayName}** lagi AFK nih!~ 💭💖 Jangan khawatir, kita tungguin kamu balik yaa! 😘💕\n` +
+                    `Semoga cepet balik lagi, Aleya kangen loh!~ 🌸✨`
+                )
+                .setThumbnail(member.displayAvatarURL())  // Menambahkan avatar user di thumbnail
+                .setFooter({ text: 'Jangan lama-lama yaa, Aleya tungguin kamu! 💖' })
+                .setTimestamp();
+
+            await channel.send({ embeds: [afkEmbed] });
+            await interaction.reply({ content: `✅ Kamu udah dipindahkan ke AFK channel, semoga cepet balik yaa~! 💖`, ephemeral: true });
         } catch (err) {
             console.error(err);
-            await interaction.reply({ content: '❌ Gagal memindahkan ke AFK channel.', ephemeral: true });
+            await interaction.reply({ content: '❌ Aduh, gagal deh memindahkan kamu ke AFK channel... coba lagi nanti ya~', ephemeral: true });
         }
     }
     // Ban
@@ -224,18 +254,23 @@ client.on('interactionCreate', async interaction => {
     // Help
     else if (commandName === 'help') {
         const helpEmbed = new EmbedBuilder()
-        .setColor(0x000FFF)
-        .setTitle('📖 Daftar Perintah Bot')
-        .setDescription('Berikut adalah perintah yang tersedia : ')
-        .addFields(
-            { name: '/ping', value: 'Cek apakah bot aktif'},
-            { name: '/owner', value: 'Informasi pembuat bot'},
-            { name: '/warn', value: 'Warn Member'},
-            { name: '/ban', value: 'Ban Member'},
-            { name: '/unban', value: 'Unban Member'},
-            { name: '/help', value: 'Menampilkan daftar perintah'}
+        .setColor(0xFFB6C1)
+        .setTitle('✨ Aleya Vellora — Special Assistant di Server Ini! ✨')
+        .setDescription(
+            'Hai kak~ (≧◡≦) ♡ Aleya di sini buat bantuin kamu!\n' +
+            'Panggil aku kapan aja yaa~\n\n' +
+            'Berikut daftar perintah yang bisa kakak pakai:'
         )
-        .setFooter({ text: 'Gunakan perintah dengan bijak yaa! ✨'})
+        .addFields(
+            { name: '💓 /ping', value: 'Cek apakah Aleya lagi online atau lagi bobo cantik~', inline: true },
+            { name: '🎀 /owner', value: 'Cari tahu siapa yang bikin Aleya secantik ini~', inline: true },
+            { name: '⚠️ /warn', value: 'Tegur member yang nakal biar nggak bandel~', inline: true },
+            { name: '🔨 /ban', value: 'Usir member yang kelewat batas... duh duh~', inline: true },
+            { name: '💫 /unban', value: 'Maafin dan panggil balik yang udah di-ban~', inline: true },
+            { name: '🌙 /afk', value: 'Kasih tau yang lain kalau kakak lagi pergi... tapi jangan lama-lama yaa, Aleya kangen~', inline: true },
+            { name: '📖 /help', value: 'Lihat semua perintah yang bisa Aleya bantuin~', inline: true },
+        )
+        .setFooter({ text: 'Gunakan perintahnya dengan hati yang manis yaa~ 💕' })
         .setTimestamp();
 
         await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
