@@ -16,7 +16,10 @@ const client = new Client({
     ],
 });
 
-client.once('ready', () => {
+client.once('ready', async () => {
+    await client.application.fetch(); // wajib untuk metadata dari portal
+    console.log("App name:", client.application.name);
+    console.log("Description:", client.application.description);
     console.log(`✅ Bot siap sebagai ${client.user.tag}`);
 });
 
