@@ -1,50 +1,54 @@
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
-const fs = require('node:fs');
-const path = require('node:path');
-const { Client, Collection, GatewayIntentBits } = require('discord.js');
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates
-  ],
+    intents: [GatewayIntentBits.Guilds],
 });
 
-// Koleksi command
 client.commands = new Collection();
 
-// Load Commands
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+// Load semua command
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
 
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
+for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-  if ('data' in command && 'execute' in command) {
-    client.commands.set(command.data.name, command);
-  } else {
-    console.warn(`[⚠️] Command ${file} tidak valid.`);
-  }
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file);
+        const command = require(filePath);
+        if ('data' in command && 'execute' in command) {
+            client.commands.set(command.data.name, command);
+        } else {
+            console.warn(`[⚠️] File ${file} tidak memiliki "data" atau "execute".`);
+        }
+    }
 }
 
-// Load Events
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+// Listener untuk command
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
 
-for (const file of eventFiles) {
-  const filePath = path.join(eventsPath, file);
-  const event = require(filePath);
+    const command = client.commands.get(interaction.commandName);
 
-  if (event.once) {
-    client.once(event.name, (...args) => event.execute(...args, client));
-  } else {
-    client.on(event.name, (...args) => event.execute(...args, client));
-  }
-}
+    if (!command) {
+        console.error(`[❌] Tidak ditemukan command: ${interaction.commandName}`);
+        return;
+    }
 
-// Start the bot
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: '❌ Terjadi kesalahan saat eksekusi command.', ephemeral: true });
+    }
+});
+
+client.once('ready', () => {
+    console.log(`🚀 Bot aktif sebagai ${client.user.tag}`);
+});
+
 client.login(process.env.TOKEN);
