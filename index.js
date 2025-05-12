@@ -1,12 +1,12 @@
 require('dotenv').config();
 const { 
   AFK_CHANNEL_ID, 
-  ALLOWED_COMMAND_CHANNEL, LOGS_CHANNEL_ID 
+  ALLOWED_COMMAND_CHANNEL, 
+  LOGS_CHANNEL_ID,
+  ADMIN_ROLE_ID 
 } = require('./config/ids');
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const kataKasar = require('./utils/kataKasar');
-const { hasAnyRole } = require('./helpers/roleChecker');
-const { ADMIN_ROLE_ID } = require('./config/ids');
 
 
 const client = new Client({
@@ -42,18 +42,18 @@ client.on('guildMemberAdd', async member => {
 });
 
 client.on('guildMemberRemove', async member => {
-  const goodbyeChannelId = LOGS_CHANNEL_ID; // Buat ID channel perpisahan di .env
-  const channel = member.guild.channels.cache.get(goodbyeChannelId);
+    const goodbyeChannelId = LOGS_CHANNEL_ID; // Buat ID channel perpisahan di .env
+    const channel = member.guild.channels.cache.get(goodbyeChannelId);
 
-  if (!channel) return console.log('⚠️ Goodbye channel tidak ditemukan.');
+    if (!channel) return console.log('⚠️ Goodbye channel tidak ditemukan.');
 
-  try {
-    await channel.send({
-      content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢\nPadahal Aleya cantik masih pengen ngobrol loh~ 💔\nSemoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🌸\nKalo rindu... pintu selalu terbuka kok~ 💌`,
-    });
-  } catch (err) {
-    console.error('❌ Gagal mengirim pesan perpisahan:', err);
-  }
+    try {
+        await channel.send({
+        content: `Ehhh~ <@${member.id}> kok pergi sih...? 😢\nPadahal Aleya cantik masih pengen ngobrol loh~ 💔\nSemoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🌸\nKalo rindu... pintu selalu terbuka kok~ 💌`,
+        });
+    } catch (err) {
+        console.error('❌ Gagal mengirim pesan perpisahan:', err);
+    }
 });
 
 
@@ -94,8 +94,11 @@ client.on('interactionCreate', async interaction => {
             ephemeral: true
         });
     }
+
+    const hasRole = roleId => interaction.member.roles.cache.has(roleId);
+
     // Ping
-    else if (commandName === 'ping') {
+    if (commandName === 'ping') {
         await interaction.reply('✨ Hai, aku di sini! Ping aku kapan saja, aku selalu siap menemani! 💖');
 
     } 
@@ -106,7 +109,7 @@ client.on('interactionCreate', async interaction => {
     } 
     // Warn
     else if (commandName === 'warn') {
-        if (!hasAnyRole(interaction.member, [ADMIN_ROLE_ID])) {
+        if (!hasRole(ADMIN_ROLE_ID)) {
             return await interaction.reply({
                 content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
                 ephemeral: true
@@ -150,7 +153,7 @@ client.on('interactionCreate', async interaction => {
     }
     // Ban
     else if (commandName === 'ban') {
-        if (!hasAnyRole(interaction.member, [ADMIN_ROLE_ID])) {
+        if (!hasRole(ADMIN_ROLE_ID)) {
             return await interaction.reply({
                 content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
                 ephemeral: true
@@ -186,7 +189,7 @@ client.on('interactionCreate', async interaction => {
     }
     // Unban
     else if (commandName === 'unban') {
-        if (!hasAnyRole(interaction.member, [ADMIN_ROLE_ID])) {
+        if (!hasRole(ADMIN_ROLE_ID)) {
             return await interaction.reply({
                 content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
                 ephemeral: true
