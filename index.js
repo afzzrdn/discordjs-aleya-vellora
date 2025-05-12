@@ -3,7 +3,8 @@ const {
   AFK_CHANNEL_ID, 
   ALLOWED_COMMAND_CHANNEL, 
   LOGS_CHANNEL_ID,
-  ADMIN_ROLE_ID 
+  ADMIN_ROLE_ID,
+  AUTO_ROLE_ID
 } = require('./config/ids');
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const kataKasar = require('./utils/kataKasar');
@@ -27,12 +28,20 @@ client.once('ready', async () => {
 });
 
 client.on('guildMemberAdd', async member => {
-    const welcomeChannelId = LOGS_CHANNEL_ID; // Masukkan ID channel di .env
+    const welcomeChannelId = LOGS_CHANNEL_ID;
+    const autoRoleId = AUTO_ROLE_ID;
+
     const channel = member.guild.channels.cache.get(welcomeChannelId);
+    const role = member.guild.roles.cache.get(autoRoleId);
 
     if (!channel) return console.log('⚠️ Welcome channel tidak ditemukan.');
+    if (!role) {
+        console.log('⚠️ Role otomatis tidak ditemukan.');
+        return;
+    }
 
     try {
+        await member.roles.add(role);
         await channel.send({
             content: `UwU~ siapa nih yang baru datang? 🌸\nHaii <@${member.id}>~ selamat datang di **${member.guild.name}**~ ✨\nAleya cantik udah nungguin kamu dari tadi loh~ 😳\nYuk baca dulu <#1281186721857404969> biar gak dimarahin! 💅 Lalu kenalan yaa, biar makin akrab~ 💖`,
         });
