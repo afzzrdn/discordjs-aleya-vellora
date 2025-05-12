@@ -1,69 +1,29 @@
 require('dotenv').config();
-const { 
-  CLIENT_ID, GUILD_ID
-} = require('./config/ids');
-const { REST, Routes, SlashCommandBuilder } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
+const { REST, Routes } = require('discord.js');
+const { CLIENT_ID, GUILD_ID } = require('./config/ids');
 
-const commands = [
-    // Ping
-    new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('ping bot'),
-    // AFK
-    new SlashCommandBuilder()
-    .setName('afk')
-    .setDescription('Memindahkanmu ke voice channel AFK'),
-    // Owner
-    new SlashCommandBuilder()
-        .setName('owner')
-        .setDescription('Informasi tentang pembuat bot'),
-    // Warn
-    new SlashCommandBuilder()
-        .setName('warn')
-        .setDescription('Berikan peringatan kepada pengguna.')
-        .addUserOption(option =>
-            option.setName('user')
-                .setDescription('Pengguna yang ingin diperingatkan.')
-                .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('reason')
-                .setDescription('Alasan peringatan.')
-                .setRequired(false)
-        ),
-    // Ban
-    new SlashCommandBuilder()
-        .setName('ban')
-        .setDescription('Banned pengguna dari server.')
-        .addUserOption(option =>
-            option.setName('user')
-            .setDescription('Pengguna yang ingin dibanned.')
-            .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('reason')
-            .setDescription('Alasan banned.')
-            .setRequired(true)
-        ),
-    // Unban
-    new SlashCommandBuilder()
-        .setName('unban')
-        .setDescription('Membatalkan ban pengguna di server.')
-        .addStringOption(option =>
-            option.setName('user_id')
-            .setDescription('ID pengguna yang ingin di-unban.')
-            .setRequired(true)
-        )
-        .addStringOption(option =>
-            option.setName('reason')
-            .setDescription('Alasan unban.')
-            .setRequired(false)
-    ),
-    // Help
-    new SlashCommandBuilder()
-        .setName('help')
-        .setDescription('Menampilkan daftar perintah')
-].map(command => command.toJSON());
+const commands = [];
+
+// Loop semua folder di ./commands
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file);
+        const command = require(filePath);
+        if ('data' in command && 'execute' in command) {
+            commands.push(command.data.toJSON());
+        } else {
+            console.warn(`[⚠️] File ${file} tidak memiliki "data" atau "execute".`);
+        }
+    }
+}
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
@@ -71,17 +31,17 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
     try {
         console.log('🧹 Menghapus semua slash command lama...');
         await rest.put(
-        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-        { body: [] },
+            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+            { body: [] }
         );
         console.log('✅ Semua perintah lama dihapus.');
 
         console.log('⏳ Mendaftarkan ulang perintah baru...');
         await rest.put(
-        Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-        { body: commands },
+            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+            { body: commands }
         );
-        console.log('✅ Perintah baru berhasil didaftarkan.');
+        console.log('✅ Semua perintah baru berhasil didaftarkan.');
     } catch (error) {
         console.error('❌ Terjadi kesalahan:', error);
     }
