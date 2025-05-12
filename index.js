@@ -1,4 +1,8 @@
 require('dotenv').config();
+const { 
+  AFK_CHANNEL_ID, 
+  ALLOWED_COMMAND_CHANNEL, LOGS_CHANNEL_ID 
+} = require('./config/ids');
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const kataKasar = require('./utils/kataKasar');
 
@@ -17,7 +21,7 @@ client.once('ready', () => {
 });
 
 client.on('guildMemberAdd', async member => {
-    const welcomeChannelId = process.env.LOGS_CHANNEL_ID; // Masukkan ID channel di .env
+    const welcomeChannelId = LOGS_CHANNEL_ID; // Masukkan ID channel di .env
     const channel = member.guild.channels.cache.get(welcomeChannelId);
 
     if (!channel) return console.log('⚠️ Welcome channel tidak ditemukan.');
@@ -32,7 +36,7 @@ client.on('guildMemberAdd', async member => {
 });
 
 client.on('guildMemberRemove', async member => {
-  const goodbyeChannelId = process.env.LOGS_CHANNEL_ID; // Buat ID channel perpisahan di .env
+  const goodbyeChannelId = LOGS_CHANNEL_ID; // Buat ID channel perpisahan di .env
   const channel = member.guild.channels.cache.get(goodbyeChannelId);
 
   if (!channel) return console.log('⚠️ Goodbye channel tidak ditemukan.');
@@ -76,7 +80,7 @@ client.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, options, user, guild, channelId } = interaction;
-    const allowedChannelId = process.env.ALLOWED_COMMAND_CHANNEL;
+    const allowedChannelId = ALLOWED_COMMAND_CHANNEL;
 
     if (channelId !== allowedChannelId) {
         return interaction.reply({
@@ -114,7 +118,7 @@ client.on('interactionCreate', async interaction => {
     } 
     // AFK
     else if (interaction.commandName === 'afk') {
-        const afkChannelId = process.env.AFK_CHANNEL_ID; // Tambahkan ID ini di .env
+        const afkChannelId = AFK_CHANNEL_ID; // Tambahkan ID ini di .env
 
         const member = interaction.member;
 
