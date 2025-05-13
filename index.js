@@ -2,7 +2,8 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
-const { handleMessageCreate } = require('./events/chatFilter'); // Ganti dengan path yg benar
+const { handleMessageCreate } = require('./events/chatFilter');
+const { getSuggestions } = require('./utils/ytSuggest');
 
 const client = new Client({
     intents: [
@@ -37,8 +38,19 @@ for (const folder of commandFolders) {
 
 // Listener untuk command
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+    if (interaction.isAutocomplete()) {
+        const focused = interaction.options.getFocused();
+        const choices = await getSuggestions(focused);
 
+        return interaction.respond(
+        choices.map(choice => ({
+            name: choice.title.length > 100 ? choice.title.substring(0, 97) + '...' : choice.title,
+            value: choice.title
+        }))
+        );
+    }
+
+    if (!interaction.isChatInputCommand()) return;
     const command = client.commands.get(interaction.commandName);
 
     if (!command) {
