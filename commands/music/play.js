@@ -1,5 +1,12 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+const {
+  joinVoiceChannel,
+  createAudioPlayer,
+  createAudioResource,
+  AudioPlayerStatus,
+  entersState,
+  VoiceConnectionStatus,
+} = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 
@@ -8,37 +15,42 @@ module.exports = {
     .setName('play')
     .setDescription('Putar musik dari YouTube')
     .addStringOption(option =>
-      option.setName('query').setDescription('Link atau judul lagu').setRequired(true).setAutocomplete(true)),
+      option.setName('query')
+        .setDescription('Link atau judul lagu')
+        .setRequired(true)
+        .setAutocomplete(true)
+    ),
+
   async execute(interaction) {
     try {
       const query = interaction.options.getString('query');
       const voiceChannel = interaction.member.voice.channel;
 
       if (!voiceChannel) {
-        return interaction.reply('Kamu harus join voice channel dulu!');
+        return interaction.reply('❌ Kamu harus join voice channel terlebih dahulu!');
       }
 
       let url = query;
       if (!ytdl.validateURL(query)) {
         const result = await ytSearch(query);
-        if (!result.videos.length) return interaction.reply('Lagu tidak ditemukan!');
+        if (!result.videos.length) {
+          return interaction.reply('🔍 Lagu tidak ditemukan!');
+        }
         url = result.videos[0].url;
       }
 
-      // Menambahkan log untuk memastikan URL yang valid
-      console.log('Playing URL:', url);
+      console.log('🎧 Memutar URL:', url);
 
-      const stream = ytdl(url, { filter: 'audioonly' }).on('error', (err) => {
-        console.error("Error with ytdl stream:", err);
-        interaction.reply("Terjadi masalah dengan stream audio.");
+      const stream = ytdl(url, {
+        filter: 'audioonly',
+        quality: 'highestaudio',
+        highWaterMark: 1 << 25, // Buffer besar agar tidak ngadat
       });
 
-      const resource = createAudioResource(stream);
-      const player = createAudioPlayer();
+      const resource = createAudioResource(stream, { inlineVolume: true });
+      resource.volume.setVolume(1.0); // Volume 100%
 
-      // Menambahkan log untuk memeriksa resource dan player
-      console.log('Audio resource created:', resource);
-      console.log('Audio player created:', player);
+      const player = createAudioPlayer();
 
       const connection = joinVoiceChannel({
         channelId: voiceChannel.id,
@@ -46,18 +58,31 @@ module.exports = {
         adapterCreator: interaction.guild.voiceAdapterCreator,
       });
 
-      player.play(resource);
-      connection.subscribe(player);
+      // Tunggu sampai koneksi siap
+      await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
 
-      interaction.reply(`🎶 Memutar lagu: ${url}`);
+      connection.subscribe(player);
+      player.play(resource);
+
+      interaction.reply(`🎶 Sedang memutar: **${url}**`);
+
+      // Logging dan event listener
+      player.on(AudioPlayerStatus.Playing, () => {
+        console.log('✅ AudioPlayer status: Playing');
+      });
 
       player.on(AudioPlayerStatus.Idle, () => {
-        console.log("Player idle, disconnecting.");
+        console.log('ℹ️ Player selesai. Menutup koneksi...');
         connection.destroy();
       });
+
+      player.on('error', error => {
+        console.error('❌ Terjadi kesalahan saat memutar audio:', error.message);
+      });
+
     } catch (err) {
-      console.error('Error in play command:', err);
-      interaction.reply('Terjadi kesalahan saat memutar lagu.');
+      console.error('🔥 Error di command /play:', err);
+      interaction.reply('🚨 Terjadi kesalahan saat memutar lagu.');
     }
   }
 };
