@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const { ADMIN_ROLE_ID } = require('../../config/ids');
 
 module.exports = {
@@ -13,19 +13,34 @@ module.exports = {
         const reason = interaction.options.getString('reason') || 'Tidak ada alasan diberikan.';
 
         if (!interaction.member.roles.cache.has(ADMIN_ROLE_ID)) {
-        return await interaction.reply({
-            content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
-            ephemeral: true
-        });
+            return await interaction.reply({
+                content: '❌ Kamu tidak memiliki izin untuk menggunakan perintah ini.',
+                ephemeral: true
+            });
         }
 
         // Kirim DM ke target (jika bisa)
         try {
-        await target.send(`⚠️ Kamu telah diberi peringatan di server **${interaction.guild.name}**.\nAlasan: ${reason}`);
+            await target.send(
+                `⚠️ Haii~ kamu barusan dapat peringatan dari server **${interaction.guild.name}**!\n\n` +
+                `**Alasan:** ${reason}\n\n` +
+                `Tolong yaa jangan diulangi lagi~ biar suasana server tetap nyaman dan seru untuk semuanya! ✨`
+            );
         } catch (err) {
-        return await interaction.reply({ content: '⚠️ Gagal mengirim DM.' });
+            return await interaction.reply({ content: '⚠️ Gagal mengirim DM ke member tersebut.', ephemeral: true });
         }
 
-        await interaction.reply(`✅ <@${target.id}> telah diperingatkan.\n📝 Alasan: ${reason}`);
+        // Balasan ke admin/moderator
+        const warnEmbed = new EmbedBuilder()
+            .setColor(0xFFA07A)
+            .setTitle('🚨 Peringatan Telah Diberikan')
+            .addFields(
+                { name: '👤 Pengguna', value: `<@${target.id}>`, inline: true },
+                { name: '📋 Alasan', value: reason, inline: true }
+            )
+            .setFooter({ text: 'Peringatan dikirim dengan penuh cinta... dan sedikit ketegasan~ 💢' })
+            .setTimestamp();
+
+        await interaction.reply({ embeds: [warnEmbed] });
     }
 };

@@ -3,9 +3,11 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 const { handleMessageCreate } = require('./events/chatFilter');
+const { handleMemberJoin, handleMemberLeave} = require('./events/memberEvents');
 const { getSuggestions } = require('./utils/ytSuggest');
 const { DisTube } = require('distube');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
+const createDistube = require('./distubeClient');
 
 const client = new Client({
     intents: [
@@ -16,13 +18,6 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
     ],
 });
-
-client.distube = new DisTube(client, {
-    leaveOnFinish: true,
-    leaveOnStop: true,
-    plugins: [new YtDlpPlugin()],
-});
-
 client.commands = new Collection();
 
 // Load semua command
@@ -74,9 +69,19 @@ client.on('interactionCreate', async interaction => {
     }
 });
 client.on('messageCreate', handleMessageCreate);
-
+client.on('guildMemberAdd', member => handleMemberJoin(client, member));
+client.on('guildMemberRemove', member => handleMemberLeave(client, member));
 client.once('ready', () => {
     console.log(`🚀 Bot aktif sebagai ${client.user.tag}`);
+    client.distube = createDistube(client);
+
+    if (client.distube) {
+        console.log('✅ DisTube berhasil diinisialisasi');
+    } else {
+        console.error('❌ DisTube gagal diinisialisasi');
+    }
 });
 
 client.login(process.env.TOKEN);
+
+module.exports = client;

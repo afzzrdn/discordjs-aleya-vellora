@@ -14,9 +14,15 @@ module.exports = {
         const welcomeEmbed = new EmbedBuilder()
             .setColor(0xFFB6C1)
             .setTitle('✨ **Yeay! Ada yang baru datang~!** ✨')
-            .setDescription(`Aww~ siapa nih yang baru gabung? 🌸 Haii <@${member.id}>~ selamat datang!`)
-            .setThumbnail(member.displayAvatarURL())
-            .setFooter({ text: 'Semoga betah yaa!' })
+            .setDescription(
+                `Aww~ siapa nih yang baru gabung? 🌸\n` +
+                `Haii <@${member.id}>~ selamat datang di **${member.guild.name}**~ ✨\n` +
+                `Aleya udah nungguin kamu dari tadi loh~ 😳💖\n` +
+                `Jangan lupa baca dulu <#1281186721857404969> yaa, biar makin akrab dan nggak dimarahin! 💅✨\n` +
+                `Ayo kenalan, kita bakal seru-seruan bareng! 💖`
+            )
+            .setThumbnail(member.displayAvatarURL())  // Menambahkan avatar member
+            .setFooter({ text: 'Semoga betah yaa, Aleya suka banget kalau kamu ada di sini! 💕' })
             .setTimestamp();
 
         await channel.send({ embeds: [welcomeEmbed] });
@@ -31,17 +37,22 @@ module.exports = {
         if (!channel) return console.log('⚠️ Goodbye channel tidak ditemukan.');
 
         try {
-        const farewellEmbed = new EmbedBuilder()
-            .setColor(0xFFB6C1)
-            .setTitle('🌸 **Aduh, Ada yang Pergi...** 💔')
-            .setDescription(`Ehhh~ <@${member.id}> kok pergi sih...? 😢💔`)
-            .setThumbnail(member.displayAvatarURL())
-            .setFooter({ text: 'Selalu ada tempat untukmu di sini!' })
-            .setTimestamp();
+            const farewellEmbed = new EmbedBuilder()
+                .setColor(0xFFB6C1)  // Warna soft pink yang manis 💖
+                .setTitle('🌸 **Aduh, Ada yang Pergi...** 💔')
+                .setDescription(
+                    `Ehhh~ <@${member.id}> kok pergi sih...? 😢💔\n` +
+                    `Aleya masih pengen banget ngobrol sama kamu loh~ 🌸💖\n` +
+                    `Semoga kamu bahagia di tempat baru ya... tapi jangan lupa sama kita di **${member.guild.name}** yaa~ 🥺✨\n` +
+                    `Kalau rindu... pintu Aleya selalu terbuka kok~ 💌💖 Kami semua bakal kangen banget! 💕`
+                )
+                .setThumbnail(member.displayAvatarURL())  // Menambahkan avatar member
+                .setFooter({ text: 'Selalu ada tempat untukmu di sini, kapan saja~ 💕' })
+                .setTimestamp();
 
-        await channel.send({ embeds: [farewellEmbed] });
+            await channel.send({ embeds: [farewellEmbed] });
         } catch (err) {
-        console.error('❌ Gagal mengirim pesan perpisahan:', err);
+            console.error('❌ Gagal mengirim pesan perpisahan:', err);
         }
     }
 };

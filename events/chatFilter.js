@@ -10,14 +10,25 @@ module.exports = {
     if (found) {
       try {
         await message.delete();
-        await message.channel.send(`🚫 **${message.author.username}**, kata tersebut tidak diperbolehkan.`);
+
+        // Pesan publik ke channel
+        await message.channel.send({
+          content: `🚫 Haii <@${message.author.id}>~ Pesanmu mengandung kata yang tidak sopan dan sudah aku hapus yaa~ 💢 Tolong dijaga bahasanya, biar semua nyaman~ 🌸`,
+          allowedMentions: { users: [message.author.id] }
+        });
+
+        // DM pribadi ke user
         try {
-          await message.author.send(`⚠️ Pesan kamu dihapus karena mengandung kata tidak pantas: **${found}**.`);
+          await message.author.send(
+            `⚠️ Hai kak ${message.author.username}~\nPesanmu barusan dihapus karena mengandung kata tidak pantas: **${found}**.\n` +
+            `Yuk kita jaga suasana server tetap ramah dan positif yaa~ ✨`
+          );
         } catch (err) {
-          console.log('DM gagal dikirim.');
+          console.warn('📭 Gagal mengirim DM ke pengguna.');
         }
+
       } catch (err) {
-        console.error('Gagal menghapus pesan:', err);
+        console.error('❌ Gagal menghapus pesan:', err);
       }
     }
   }
