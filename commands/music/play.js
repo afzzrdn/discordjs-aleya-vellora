@@ -27,7 +27,11 @@ module.exports = {
       url = result.videos[0].url;
     }
 
-    const stream = ytdl(url, { filter: 'audioonly' });
+    const stream = ytdl(url, { filter: 'audioonly' }).on('error', (error) => {
+      console.error(error);
+      interaction.reply('Terjadi masalah saat memutar video. Pastikan video masih tersedia.');
+    });
+
     const resource = createAudioResource(stream);
     const player = createAudioPlayer();
 
