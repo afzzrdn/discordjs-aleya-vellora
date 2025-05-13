@@ -9,6 +9,7 @@ module.exports = {
       option.setName('judul')
         .setDescription('Judul atau URL lagu YouTube')
         .setRequired(true)
+        .setAutocomplete(true)
     ),
   async execute(interaction) {
     const title = interaction.options.getString('judul');
