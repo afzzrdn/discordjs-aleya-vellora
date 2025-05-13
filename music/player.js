@@ -2,17 +2,28 @@ const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerSta
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 
+// Helper: Cek apakah string adalah URL video YouTube
+function isYouTubeUrl(str) {
+  return /^https?:\/\/(www\.)?youtube\.com\/watch\?v=/.test(str) || /^https?:\/\/youtu\.be\//.test(str);
+}
+
 async function joinAndPlay(voiceChannel, query, interaction) {
   try {
-    // Cari video dari judul
-    const result = await ytSearch(query);
-    const video = result.videos.length > 0 ? result.videos[0] : null;
+    let videoUrl = query;
 
-    if (!video) {
-      return interaction.editReply('❌ Lagu tidak ditemukan di YouTube.');
+    // Jika bukan URL, cari dari judul
+    if (!isYouTubeUrl(query)) {
+      const result = await ytSearch(query);
+      const video = result.videos.length > 0 ? result.videos[0] : null;
+
+      if (!video) {
+        return interaction.editReply('❌ Lagu tidak ditemukan di YouTube.');
+      }
+
+      videoUrl = video.url;
     }
 
-    const stream = ytdl(video.url, {
+    const stream = ytdl(videoUrl, {
       filter: 'audioonly',
       highWaterMark: 1 << 25
     });
@@ -33,7 +44,7 @@ async function joinAndPlay(voiceChannel, query, interaction) {
       connection.destroy();
     });
 
-    await interaction.editReply(`🎵 Memutar: **${video.title}**`);
+    await interaction.editReply(`🎵 Memutar: **${videoUrl}**`);
   } catch (err) {
     console.error(err);
     await interaction.editReply('❌ Gagal memutar lagu.');
