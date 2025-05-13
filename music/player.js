@@ -1,88 +1,34 @@
-process.env.FFMPEG_PATH = require('ffmpeg-static');
-const ffmpeg = require('ffmpeg-static');
-console.log('FFmpeg path:', ffmpeg);
+import { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } from '@discordjs/voice';
+import ytdl from 'ytdl-core';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
-const ytdl = require('ytdl-core');
-const ytSearch = require('yt-search');
+export async function joinAndPlay(voiceChannel, query, interaction) {
+  try {
+    const stream = ytdl(query, {
+      filter: 'audioonly',
+      highWaterMark: 1 << 25
+    });
 
-const queues = new Map();
+    const resource = createAudioResource(stream);
+    const player = createAudioPlayer();
 
-async function playSong(guild, song, interaction) {
-  const serverQueue = queues.get(guild.id);
+    const connection = joinVoiceChannel({
+      channelId: voiceChannel.id,
+      guildId: voiceChannel.guild.id,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator
+    });
 
-  if (!song) {
-    const connection = getVoiceConnection(guild.id);
-    if (connection) connection.destroy();
-    queues.delete(guild.id);
-    return;
+    connection.subscribe(player);
+    player.play(resource);
+
+    player.on(AudioPlayerStatus.Idle, () => {
+      connection.destroy();
+    });
+
+    await interaction.editReply(`🎵 Memutar: **${query}**`);
+  } catch (error) {
+    console.error(error);
+    await interaction.editReply('❌ Gagal memutar lagu.');
   }
-
-  const stream = ytdl(song.url, { filter: 'audioonly', highWaterMark: 1 << 25 });
-  const resource = createAudioResource(stream);
-  serverQueue.player.play(resource);
-
-  serverQueue.connection.subscribe(serverQueue.player);
-
-  serverQueue.player.once(AudioPlayerStatus.Idle, () => {
-    serverQueue.songs.shift();
-    playSong(guild, serverQueue.songs[0], interaction);
-  });
-
-  await interaction.followUp(`▶️ Memutar: **${song.title}**`);
 }
-
-module.exports = {
-  queues,
-  async executePlay(interaction, query) {
-    const voiceChannel = interaction.member.voice.channel;
-    if (!voiceChannel) return interaction.reply('🔇 Kamu harus join voice channel.');
-
-    const search = await ytSearch(query);
-    if (!search.videos.length) return interaction.reply('❌ Lagu tidak ditemukan.');
-
-    const song = {
-      title: search.videos[0].title,
-      url: search.videos[0].url,
-    };
-
-    let serverQueue = queues.get(interaction.guild.id);
-
-    if (!serverQueue) {
-      const connection = joinVoiceChannel({
-        channelId: voiceChannel.id,
-        guildId: interaction.guild.id,
-        adapterCreator: interaction.guild.voiceAdapterCreator,
-      });
-
-      const player = createAudioPlayer();
-      queues.set(interaction.guild.id, {
-        voiceChannel,
-        connection,
-        player,
-        songs: [song],
-      });
-
-      await interaction.reply(`📥 Menambahkan ke antrian: **${song.title}**`);
-      playSong(interaction.guild, song, interaction);
-    } else {
-      serverQueue.songs.push(song);
-      await interaction.reply(`📥 Ditambahkan ke antrian: **${song.title}**`);
-    }
-  },
-
-  skip(interaction) {
-    const serverQueue = queues.get(interaction.guild.id);
-    if (!serverQueue) return interaction.reply('🚫 Tidak ada lagu yang diputar.');
-    serverQueue.player.stop();
-    return interaction.reply('⏭️ Lagu dilewati.');
-  },
-
-  stop(interaction) {
-    const serverQueue = queues.get(interaction.guild.id);
-    if (!serverQueue) return interaction.reply('🚫 Tidak ada yang bisa dihentikan.');
-    serverQueue.songs = [];
-    serverQueue.player.stop();
-    return interaction.reply('🛑 Musik dihentikan.');
-  }
-};
