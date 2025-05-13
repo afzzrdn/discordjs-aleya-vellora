@@ -1,25 +1,46 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { joinAndPlay } = require('../../music/player.js');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+const ytdl = require('ytdl-core');
+const ytSearch = require('yt-search');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('play')
-    .setDescription('Memutar lagu dari YouTube')
+    .setDescription('Putar musik dari YouTube')
     .addStringOption(option =>
-      option.setName('judul')
-        .setDescription('Judul atau URL lagu YouTube')
-        .setRequired(true)
-        .setAutocomplete(true)
-    ),
+      option.setName('query').setDescription('Link atau judul lagu').setRequired(true)),
   async execute(interaction) {
-    const title = interaction.options.getString('judul');
+    const query = interaction.options.getString('query');
     const voiceChannel = interaction.member.voice.channel;
 
     if (!voiceChannel) {
-      return interaction.reply({ content: 'Kamu harus berada di voice channel dulu!', ephemeral: true });
+      return interaction.reply('Kamu harus join voice channel dulu!');
     }
 
-    await interaction.deferReply();
-    await joinAndPlay(voiceChannel, title, interaction);
+    let url = query;
+    if (!ytdl.validateURL(query)) {
+      const result = await ytSearch(query);
+      if (!result.videos.length) return interaction.reply('Lagu tidak ditemukan!');
+      url = result.videos[0].url;
+    }
+
+    const stream = ytdl(url, { filter: 'audioonly' });
+    const resource = createAudioResource(stream);
+    const player = createAudioPlayer();
+
+    const connection = joinVoiceChannel({
+      channelId: voiceChannel.id,
+      guildId: interaction.guild.id,
+      adapterCreator: interaction.guild.voiceAdapterCreator,
+    });
+
+    player.play(resource);
+    connection.subscribe(player);
+
+    client.audioPlayer = player;
+
+    interaction.reply(`🎶 Memutar lagu: ${url}`);
+
+    player.on(AudioPlayerStatus.Idle, () => connection.destroy());
   }
 };
