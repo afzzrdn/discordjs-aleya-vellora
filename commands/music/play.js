@@ -4,6 +4,7 @@ const {
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
+  VoiceConnectionStatus,
 } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
@@ -21,6 +22,9 @@ module.exports = {
     ),
 
   async execute(interaction) {
+    let connection;
+    let isDestroyed = false;
+
     try {
       const query = interaction.options.getString('query');
       const voiceChannel = interaction.member.voice.channel;
@@ -43,19 +47,17 @@ module.exports = {
       const stream = ytdl(url, {
         filter: 'audioonly',
         quality: 'highestaudio',
-        highWaterMark: 1 << 25, // untuk stream yang lebih stabil
-      }).on('error', (err) => {
-        console.error('🚨 Stream error:', err);
+        highWaterMark: 1 << 25,
       });
 
       const resource = createAudioResource(stream);
       const player = createAudioPlayer();
 
-      const connection = joinVoiceChannel({
+      connection = joinVoiceChannel({
         channelId: voiceChannel.id,
         guildId: interaction.guild.id,
         adapterCreator: interaction.guild.voiceAdapterCreator,
-        selfDeaf: false, // opsional, default true
+        selfDeaf: false,
       });
 
       connection.subscribe(player);
@@ -64,25 +66,40 @@ module.exports = {
       await interaction.reply(`🎶 Memutar lagu: ${url}`);
 
       player.on(AudioPlayerStatus.Idle, () => {
-        console.log('⏹ Player idle. Disconnecting...');
-        connection.destroy();
+        console.log('⏹ Player idle.');
+        safelyDestroy(connection);
       });
 
       player.on('error', error => {
         console.error('💥 Player error:', error);
-        connection.destroy();
+        safelyDestroy(connection);
       });
+
+      stream.on('error', error => {
+        console.error('🚨 Stream error:', error);
+        safelyDestroy(connection);
+      });
+
+      function safelyDestroy(conn) {
+        if (!isDestroyed && conn.state.status !== VoiceConnectionStatus.Destroyed) {
+          conn.destroy();
+          isDestroyed = true;
+          console.log('🔌 Voice connection destroyed safely.');
+        }
+      }
 
     } catch (err) {
       console.error('❌ Error di command play:', err);
-      try {
-        if (!interaction.replied) {
-          await interaction.reply('🚨 Terjadi kesalahan saat mencoba memutar lagu.');
-        } else {
-          await interaction.followUp('🚨 Terjadi kesalahan lanjutan saat memutar lagu.');
-        }
-      } catch (followErr) {
-        console.error('❗ Gagal mengirim error reply:', followErr);
+      if (!interaction.replied) {
+        await interaction.reply('🚨 Terjadi kesalahan saat mencoba memutar lagu.');
+      } else {
+        await interaction.followUp('🚨 Terjadi kesalahan lanjutan saat memutar lagu.');
+      }
+
+      // Pastikan koneksi dihancurkan jika belum
+      if (connection && !isDestroyed) {
+        connection.destroy();
+        isDestroyed = true;
       }
     }
   }
