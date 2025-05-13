@@ -4,6 +4,8 @@ const path = require('path');
 require('dotenv').config();
 const { handleMessageCreate } = require('./events/chatFilter');
 const { getSuggestions } = require('./utils/ytSuggest');
+const { DisTube } = require('distube');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
 
 const client = new Client({
     intents: [
@@ -13,6 +15,13 @@ const client = new Client({
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.MessageContent,
     ],
+});
+
+client.distube = new DisTube(client, {
+    leaveOnEmpty: true,
+    leaveOnFinish: true,
+    leaveOnStop: true,
+    plugins: [new YtDlpPlugin()],
 });
 
 client.commands = new Collection();
