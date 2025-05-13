@@ -2,6 +2,10 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+
+const ffmpegPath = require('ffmpeg-static');
+process.env.FFMPEG_PATH = ffmpegPath;
+
 const { handleMessageCreate } = require('./events/chatFilter');
 const { handleMemberJoin, handleMemberLeave} = require('./events/memberEvents');
 const { getSuggestions } = require('./utils/ytSuggest');
