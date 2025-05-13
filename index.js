@@ -5,8 +5,6 @@ require('dotenv').config();
 const { handleMessageCreate } = require('./events/chatFilter');
 const { handleMemberJoin, handleMemberLeave} = require('./events/memberEvents');
 const { getSuggestions } = require('./utils/ytSuggest');
-const { DisTube } = require('distube');
-const { YtDlpPlugin } = require('@distube/yt-dlp');
 const createDistube = require('./distubeClient');
 
 const client = new Client({
