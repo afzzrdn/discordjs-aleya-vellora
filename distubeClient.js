@@ -1,18 +1,13 @@
-// distubeClient.js
 const { DisTube } = require('distube');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
-const ffmpegPath = require('ffmpeg-static');
+const ffmpeg = require('@ffmpeg-installer/ffmpeg');
 
-// Set path ffmpeg untuk DisTube dan yt-dlp
-process.env.FFMPEG_PATH = ffmpegPath;
+process.env.FFMPEG_PATH = ffmpeg.path; 
 
 const createDistube = (client) => {
   return new DisTube(client, {
-    plugins: [new YtDlpPlugin({
-      update: false,
-      ffmpeg: ffmpegPath,
-    })],
-    ffmpeg: ffmpegPath,
+    plugins: [new YtDlpPlugin()],
+    ffmpeg: ffmpeg.path, // Optional, just to be extra safe
   });
 };
 
