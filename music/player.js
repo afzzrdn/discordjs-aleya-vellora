@@ -1,15 +1,9 @@
-import { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } from '@discordjs/voice';
-import ytdl from 'ytdl-core';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
+const ytdl = require('ytdl-core');
 
-export async function joinAndPlay(voiceChannel, query, interaction) {
+async function joinAndPlay(voiceChannel, query, interaction) {
   try {
-    const stream = ytdl(query, {
-      filter: 'audioonly',
-      highWaterMark: 1 << 25
-    });
-
+    const stream = ytdl(query, { filter: 'audioonly', highWaterMark: 1 << 25 });
     const resource = createAudioResource(stream);
     const player = createAudioPlayer();
 
@@ -27,8 +21,10 @@ export async function joinAndPlay(voiceChannel, query, interaction) {
     });
 
     await interaction.editReply(`🎵 Memutar: **${query}**`);
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     await interaction.editReply('❌ Gagal memutar lagu.');
   }
 }
+
+module.exports = { joinAndPlay };
