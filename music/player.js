@@ -1,9 +1,22 @@
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
+const ytSearch = require('yt-search');
 
 async function joinAndPlay(voiceChannel, query, interaction) {
   try {
-    const stream = ytdl(query, { filter: 'audioonly', highWaterMark: 1 << 25 });
+    // Cari video dari judul
+    const result = await ytSearch(query);
+    const video = result.videos.length > 0 ? result.videos[0] : null;
+
+    if (!video) {
+      return interaction.editReply('❌ Lagu tidak ditemukan di YouTube.');
+    }
+
+    const stream = ytdl(video.url, {
+      filter: 'audioonly',
+      highWaterMark: 1 << 25
+    });
+
     const resource = createAudioResource(stream);
     const player = createAudioPlayer();
 
@@ -20,7 +33,7 @@ async function joinAndPlay(voiceChannel, query, interaction) {
       connection.destroy();
     });
 
-    await interaction.editReply(`🎵 Memutar: **${query}**`);
+    await interaction.editReply(`🎵 Memutar: **${video.title}**`);
   } catch (err) {
     console.error(err);
     await interaction.editReply('❌ Gagal memutar lagu.');
