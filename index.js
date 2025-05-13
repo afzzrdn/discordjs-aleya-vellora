@@ -2,6 +2,7 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+const { handleMessageCreate } = require('./events/chatFilter'); // Ganti dengan path yg benar
 
 const client = new Client({
     intents: [
@@ -52,6 +53,7 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: '❌ Terjadi kesalahan saat eksekusi command.', ephemeral: true });
     }
 });
+client.on('messageCreate', handleMessageCreate);
 
 client.once('ready', () => {
     console.log(`🚀 Bot aktif sebagai ${client.user.tag}`);
