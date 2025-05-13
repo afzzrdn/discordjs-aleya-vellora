@@ -8,7 +8,10 @@ module.exports = {
     .setName('play')
     .setDescription('Putar musik dari YouTube')
     .addStringOption(option =>
-      option.setName('query').setDescription('Link atau judul lagu').setRequired(true)),
+      option.setName('query').setDescription('Link atau judul lagu')
+      .setRequired(true)
+      .setAutocomplete(true)  
+    ),
   async execute(interaction) {
     const query = interaction.options.getString('query');
     const voiceChannel = interaction.member.voice.channel;
