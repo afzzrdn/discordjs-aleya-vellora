@@ -4,8 +4,6 @@ const {
   createAudioPlayer,
   createAudioResource,
   AudioPlayerStatus,
-  entersState,
-  VoiceConnectionStatus,
 } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
@@ -15,7 +13,8 @@ module.exports = {
     .setName('play')
     .setDescription('Putar musik dari YouTube')
     .addStringOption(option =>
-      option.setName('query')
+      option
+        .setName('query')
         .setDescription('Link atau judul lagu')
         .setRequired(true)
         .setAutocomplete(true)
@@ -27,14 +26,14 @@ module.exports = {
       const voiceChannel = interaction.member.voice.channel;
 
       if (!voiceChannel) {
-        return interaction.reply('❌ Kamu harus join voice channel terlebih dahulu!');
+        return await interaction.reply('❌ Kamu harus join voice channel dulu!');
       }
 
       let url = query;
       if (!ytdl.validateURL(query)) {
         const result = await ytSearch(query);
         if (!result.videos.length) {
-          return interaction.reply('🔍 Lagu tidak ditemukan!');
+          return await interaction.reply('❌ Lagu tidak ditemukan!');
         }
         url = result.videos[0].url;
       }
@@ -44,45 +43,47 @@ module.exports = {
       const stream = ytdl(url, {
         filter: 'audioonly',
         quality: 'highestaudio',
-        highWaterMark: 1 << 25, // Buffer besar agar tidak ngadat
+        highWaterMark: 1 << 25, // untuk stream yang lebih stabil
+      }).on('error', (err) => {
+        console.error('🚨 Stream error:', err);
       });
 
-      const resource = createAudioResource(stream, { inlineVolume: true });
-      resource.volume.setVolume(1.0); // Volume 100%
-
+      const resource = createAudioResource(stream);
       const player = createAudioPlayer();
 
       const connection = joinVoiceChannel({
         channelId: voiceChannel.id,
         guildId: interaction.guild.id,
         adapterCreator: interaction.guild.voiceAdapterCreator,
+        selfDeaf: false, // opsional, default true
       });
-
-      // Tunggu sampai koneksi siap
-      await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
 
       connection.subscribe(player);
       player.play(resource);
 
-      interaction.reply(`🎶 Sedang memutar: **${url}**`);
-
-      // Logging dan event listener
-      player.on(AudioPlayerStatus.Playing, () => {
-        console.log('✅ AudioPlayer status: Playing');
-      });
+      await interaction.reply(`🎶 Memutar lagu: ${url}`);
 
       player.on(AudioPlayerStatus.Idle, () => {
-        console.log('ℹ️ Player selesai. Menutup koneksi...');
+        console.log('⏹ Player idle. Disconnecting...');
         connection.destroy();
       });
 
       player.on('error', error => {
-        console.error('❌ Terjadi kesalahan saat memutar audio:', error.message);
+        console.error('💥 Player error:', error);
+        connection.destroy();
       });
 
     } catch (err) {
-      console.error('🔥 Error di command /play:', err);
-      interaction.reply('🚨 Terjadi kesalahan saat memutar lagu.');
+      console.error('❌ Error di command play:', err);
+      try {
+        if (!interaction.replied) {
+          await interaction.reply('🚨 Terjadi kesalahan saat mencoba memutar lagu.');
+        } else {
+          await interaction.followUp('🚨 Terjadi kesalahan lanjutan saat memutar lagu.');
+        }
+      } catch (followErr) {
+        console.error('❗ Gagal mengirim error reply:', followErr);
+      }
     }
   }
 };
