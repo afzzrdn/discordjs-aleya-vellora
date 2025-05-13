@@ -1,4 +1,6 @@
 process.env.FFMPEG_PATH = require('ffmpeg-static');
+const ffmpeg = require('ffmpeg-static');
+console.log('FFmpeg path:', ffmpeg);
 
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, getVoiceConnection } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
