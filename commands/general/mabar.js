@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { LOGS_CHANNEL_ID } = require('../../config/ids'); // pastikan ini path yg benar
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,7 +21,7 @@ module.exports = {
     async execute(interaction) {
         const game = interaction.options.getString('game');
         const slot = interaction.options.getInteger('slot');
-        const username = interaction.user; // dapatkan info user
+        const username = interaction.user;
 
         const mabarEmbed = new EmbedBuilder()
             .setColor(0xFFC0CB)
@@ -33,10 +34,24 @@ module.exports = {
             .setFooter({ text: 'Mabar itu ibadah (˶ᵔ ᵕ ᵔ˶)' })
             .setTimestamp();
 
-        await interaction.reply({
+        const targetChannel = interaction.client.channels.cache.get(LOGS_CHANNEL_ID);
+
+        if (!targetChannel) {
+            return interaction.reply({
+                content: 'Channel mabar tidak ditemukan 😢 Cek konfigurasi LOGS_CHANNEL_ID.',
+                ephemeral: true,
+            });
+        }
+
+        await targetChannel.send({
             content: '@everyone',
             embeds: [mabarEmbed],
-            allowedMentions: { parse: ['everyone', 'users'] }
+            allowedMentions: { parse: ['everyone', 'users'] },
+        });
+
+        await interaction.reply({
+            content: 'Ajakan mabar kamu sudah dikirim ke channel khusus~ ✨',
+            ephemeral: true,
         });
     }
 };
