@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { LOGS_CHANNEL_ID } = require('../../config/ids'); // pastikan ini path yg benar
+const { LOGS_CHANNEL_ID } = require('../config/ids');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -43,14 +43,16 @@ module.exports = {
             });
         }
 
+        // Kirim pesan ke channel target dan tag everyone
         await targetChannel.send({
             content: '@everyone',
             embeds: [mabarEmbed],
             allowedMentions: { parse: ['everyone', 'users'] },
         });
 
+        // Beri feedback ke user agar tidak bingung
         await interaction.reply({
-            content: 'Ajakan mabar kamu sudah dikirim ke channel khusus~ ✨',
+            content: 'Ajakan mabar kamu sudah dikirim ke channel mabar dan semua udah di-tag! 🎮✨',
             ephemeral: true,
         });
     }
