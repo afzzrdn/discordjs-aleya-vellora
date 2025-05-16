@@ -2,13 +2,7 @@ const { Client, GatewayIntentBits, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
-const ffmpeg = require('@ffmpeg-installer/ffmpeg');
 
-// 🔧 Patch PATH untuk Railway agar DisTube bisa temukan ffmpeg
-process.env.FFMPEG_PATH = ffmpeg.path;
-process.env.PATH = `${process.env.PATH}:${ffmpeg.path.replace(/\/ffmpeg$/, '')}`;
-
-// 📦 Inisialisasi client
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -43,11 +37,6 @@ for (const folder of commandFolders) {
 // 📡 Event listeners
 const { handleMessageCreate } = require('./events/chatFilter');
 const { handleMemberJoin, handleMemberLeave } = require('./events/memberEvents');
-const { getSuggestions } = require('./utils/ytSuggest');
-
-// 🎵 Inisialisasi DisTube sebelum bot login
-const createDistube = require('./distubeClient');
-client.distube = createDistube(client);
 
 // 🔌 Event: saat command digunakan
 client.on('interactionCreate', async interaction => {
@@ -87,7 +76,6 @@ client.on('guildMemberRemove', member => handleMemberLeave(client, member));
 // ✅ Bot siap digunakan
 client.once('ready', () => {
     console.log(`🚀 Bot aktif sebagai ${client.user.tag}`);
-    console.log('✅ DisTube berhasil diinisialisasi');
 });
 
 // 🔑 Login bot
