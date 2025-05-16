@@ -22,10 +22,11 @@ module.exports = {
                 { name: '🌙 /afk', value: 'Kasih tau yang lain kalau kakak lagi pergi... tapi jangan lama-lama yaa, Aleya kangen~', inline: true },
                 { name: '📖 /help', value: 'Lihat semua perintah yang bisa Aleya bantuin~', inline: true },
                 { name: '🎮 /mabar', value: 'Ajak teman-teman kamu untuk main bareng seru! Jangan sampai kehabisan slot yaa~ (≧◡≦) ♡', inline: true },
+                { name: '🧹 /clear', value: 'Bersihin chat yang berantakan biar channel-nya rapi lagi~ kayak kamar Aleya tiap minggu~ (ﾉ≧ڡ≦)', inline: true },
             )
             .setFooter({ text: 'Gunakan perintahnya dengan hati yang manis yaa~ 💕' })
             .setTimestamp();
 
-            await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
+            await interaction.reply({ embeds: [helpEmbed], ephemeral: false });
     }
 }
