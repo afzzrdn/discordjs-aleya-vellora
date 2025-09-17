@@ -2,7 +2,6 @@ const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerSta
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 
-// Helper: Cek apakah string adalah URL video YouTube
 function isYouTubeUrl(str) {
   return /^https?:\/\/(www\.)?youtube\.com\/watch\?v=/.test(str) || /^https?:\/\/youtu\.be\//.test(str);
 }

@@ -69,7 +69,7 @@ client.on('interactionCreate', async interaction => {
 });
 
 // 🧠 Event lainnya
-client.on('messageCreate', handleMessageCreate);
+client.on('messageCreate', message => handleMessageCreate(client, message));
 client.on('guildMemberAdd', member => handleMemberJoin(client, member));
 client.on('guildMemberRemove', member => handleMemberLeave(client, member));
 
