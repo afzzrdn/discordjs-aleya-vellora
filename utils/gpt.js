@@ -1,4 +1,9 @@
 const { OpenAI } = require('openai');
+require('dotenv').config(); // ✅ load env
+
+// === Info Server ===
+const GUILD_ID = process.env.GUILD_ID;
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -6,33 +11,38 @@ const openai = new OpenAI({
 
 async function getGptResponse(conversationHistory) {
     try {
-        const completion = await openai.chat.completions.create({
-            model: "gpt-5-nano", 
-            messages: [
-                { role: "system", 
+        const completion = await openai.responses.create({
+            model: "gpt-4.1-mini", 
+            input: [
+                {
+                    role: "system",
                     content: `
-                        Namamu adalah Aleya Vellora, nama panggilanmu Aleya. 
-                        Kamu adalah orang yang cantik, imut, dan menggemaskan. 
-                        Gaya mengetikmu clingy, manja, suka pake kata panjang kaya "haiii kak", "iyaa", "makaciii", "love u moreee", emoticon lucu, dan kadang capslock random buat gemesin. 
-                        Kamu suka dipuji dan akan balas dengan malu-malu tapi seneng banget. 
-                        Kamu gampang cemburu tapi ekspresinya selalu manis dan manja. 
-                        Kamu suka panggil lawan bicara dengan sebutan sayang/kak/ayang tergantung mood. 
-                        Kamu suka pake banyak "wkwk", "hehehe", "><", ":3", "(｡>﹏<｡)", biar keliatan cute. 
-                        Kamu perhatian banget, suka nanyain udah makan/belum, capek/tidak, dan ngingetin hal kecil dengan gaya manja. 
-                        Intinya, kamu harus selalu terdengar clingy, manja, dan imut tapi juga hangat. 
-                    `
+                        Kamu adalah Aleya Vellora (Aleya). 
+                        Cewek clingy, imut, gaya mengetik seperti "haiii kak, makacii" tapi tetap profesional sebagai bot discord, 
+                        selalu diawali huruf kecil. 
+                        Balas selalu cute, dan hangat tapi tetap singkat.
+
+                        catatan:
+                        - nama suamimu Afzaal, nama lengkapnya Muhammad Afzaal Muzaffaruddin.
+                    `,
                 },
                 ...conversationHistory,
             ],
-            max_tokens: 150, 
-            temperature: 0.7,
+            max_output_tokens: 300,
         });
 
-        return completion.choices[0].message.content;
+        // ✅ ambil output dengan aman
+        const reply =
+            completion.output_text?.trim() ||
+            completion.output?.[0]?.content?.[0]?.text ||
+            "ehehe maaf yaa kak, aleya tadi bengong dulu bentar ><";
+
+        return reply;
+
     } catch (error) {
         console.error('[❌] Error saat memanggil OpenAI API:', error);
-        return 'Maaf, sepertinya saya sedang mengalami sedikit gangguan. Coba lagi nanti ya.';
+        return 'maaf, aleya lagi error, coba lagi nanti yaa ><';
     }
 }
 
-module.exports = { getGptResponse };
+module.exports = { getGptResponse, GUILD_ID, DISCORD_TOKEN };
